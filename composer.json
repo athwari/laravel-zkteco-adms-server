@@ -1,0 +1,56 @@
+{
+    "name": "athwari/laravel-zkteco-adms-server",
+    "description": "Laravel package implementing the ZKTeco ADMS protocol for biometric attendance devices.",
+    "keywords": [
+        "laravel",
+        "zkteco",
+        "adms",
+        "biometric",
+        "attendance",
+        "fingerprint",
+        "iclock"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Athwari",
+            "email": "athwari@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/http": "^10.0|^11.0|^12.0",
+        "illuminate/routing": "^10.0|^11.0|^12.0",
+        "illuminate/events": "^10.0|^11.0|^12.0",
+        "illuminate/console": "^10.0|^11.0|^12.0",
+        "illuminate/log": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Athwari\\ZktecoAdms\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Athwari\\ZktecoAdms\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Athwari\\ZktecoAdms\\ZktecoAdmsServiceProvider"
+            ],
+            "aliases": {
+                "ZktecoAdms": "Athwari\\ZktecoAdms\\Facades\\ZktecoAdms"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
