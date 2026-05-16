@@ -15,16 +15,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ValidateDeviceRequest
 {
-    public function __construct(private readonly AttendanceParser $parser)
-    {
-    }
+    public function __construct(private readonly AttendanceParser $parser) {}
 
     public function handle(Request $request, Closure $next): Response
     {
         // Validate SN parameter
         $sn = $request->query('SN', '');
 
-        if ($sn === '' || $sn === null) {
+        if ($sn === '') {
             return response('Missing SN parameter', 400);
         }
 

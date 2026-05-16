@@ -1,138 +1,110 @@
 <?php
 
-namespace Athwari\ZktecoAdms\Tests\Unit;
-
 use Athwari\ZktecoAdms\Exceptions\CommandQueueFullException;
 use Athwari\ZktecoAdms\Exceptions\DeviceNotFoundException;
 use Athwari\ZktecoAdms\Services\CommandManager;
 use Athwari\ZktecoAdms\Services\DeviceManager;
-use Athwari\ZktecoAdms\Tests\TestCase;
 
-class CommandManagerTest extends TestCase
-{
-    private CommandManager $commandManager;
-    private DeviceManager $deviceManager;
+beforeEach(function () {
+    $this->commandManager = app(CommandManager::class);
+    $this->deviceManager = app(DeviceManager::class);
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->commandManager = app(CommandManager::class);
-        $this->deviceManager = app(DeviceManager::class);
-    }
+test('queue command', function () {
+    $this->deviceManager->registerDevice('TEST001');
 
-    public function test_queue_command(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
+    $id = $this->commandManager->queueCommand('TEST001', 'INFO');
 
-        $id = $this->commandManager->queueCommand('TEST001', 'INFO');
+    expect($id)->toBeGreaterThan(0)
+        ->and($this->commandManager->pendingCount('TEST001'))->toBe(1);
+});
 
-        $this->assertGreaterThan(0, $id);
-        $this->assertEquals(1, $this->commandManager->pendingCount('TEST001'));
-    }
+test('queue command for unknown device', function () {
+    $this->commandManager->queueCommand('UNKNOWN', 'INFO');
+})->throws(DeviceNotFoundException::class);
 
-    public function test_queue_command_for_unknown_device(): void
-    {
-        $this->expectException(DeviceNotFoundException::class);
-        $this->commandManager->queueCommand('UNKNOWN', 'INFO');
-    }
+test('queue command limit', function () {
+    config()->set('zkteco-adms.max_commands_per_device', 2);
+    $this->deviceManager->registerDevice('TEST001');
 
-    public function test_queue_command_limit(): void
-    {
-        config()->set('zkteco-adms.max_commands_per_device', 2);
-        $this->deviceManager->registerDevice('TEST001');
+    $this->commandManager->queueCommand('TEST001', 'INFO');
+    $this->commandManager->queueCommand('TEST001', 'CHECK');
 
-        $this->commandManager->queueCommand('TEST001', 'INFO');
-        $this->commandManager->queueCommand('TEST001', 'CHECK');
+    $this->commandManager->queueCommand('TEST001', 'LOG');
+})->throws(CommandQueueFullException::class);
 
-        $this->expectException(CommandQueueFullException::class);
-        $this->commandManager->queueCommand('TEST001', 'LOG');
-    }
+test('drain commands', function () {
+    $this->deviceManager->registerDevice('TEST001');
+    $this->commandManager->queueCommand('TEST001', 'INFO');
+    $this->commandManager->queueCommand('TEST001', 'CHECK');
 
-    public function test_drain_commands(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
+    $entries = $this->commandManager->drainCommands('TEST001');
 
-        $this->commandManager->queueCommand('TEST001', 'INFO');
-        $this->commandManager->queueCommand('TEST001', 'CHECK');
+    expect($entries)->toHaveCount(2)
+        ->and($entries[0]->command)->toBe('INFO')
+        ->and($entries[1]->command)->toBe('CHECK')
+        ->and($entries[0]->toWireFormat())->toMatch('/^C:\d+:INFO\n$/');
+});
 
-        $entries = $this->commandManager->drainCommands('TEST001');
+test('drain commands marks as sent', function () {
+    $this->deviceManager->registerDevice('TEST001');
+    $this->commandManager->queueCommand('TEST001', 'INFO');
 
-        $this->assertCount(2, $entries);
-        $this->assertEquals('INFO', $entries[0]->command);
-        $this->assertEquals('CHECK', $entries[1]->command);
+    $this->commandManager->drainCommands('TEST001');
 
-        // Wire format
-        $this->assertMatchesRegularExpression('/^C:\d+:INFO\n$/', $entries[0]->toWireFormat());
-    }
+    // No more pending (unsent) commands, but still counts sent ones
+    $drained = $this->commandManager->drainCommands('TEST001');
 
-    public function test_drain_commands_marks_as_sent(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
-        $this->commandManager->queueCommand('TEST001', 'INFO');
+    expect($drained)->toHaveCount(0);
+});
 
-        $entries = $this->commandManager->drainCommands('TEST001');
+test('confirm command', function () {
+    $this->deviceManager->registerDevice('TEST001');
+    $id = $this->commandManager->queueCommand('TEST001', 'INFO');
 
-        // No more pending (unsent) commands, but still counts sent ones
-        $drained = $this->commandManager->drainCommands('TEST001');
-        $this->assertCount(0, $drained);
-    }
+    $this->commandManager->confirmCommand($id, 0);
 
-    public function test_confirm_command(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
-        $id = $this->commandManager->queueCommand('TEST001', 'INFO');
+    expect($this->commandManager->getQueuedCommand($id))->toBe('INFO');
+});
 
-        $this->commandManager->confirmCommand($id, 0);
+test('convenience commands', function () {
+    $this->deviceManager->registerDevice('TEST001');
 
-        $queuedCmd = $this->commandManager->getQueuedCommand($id);
-        $this->assertEquals('INFO', $queuedCmd);
-    }
+    $id = $this->commandManager->sendInfoCommand('TEST001');
+    expect($id)->toBeGreaterThan(0)
+        ->and($this->commandManager->getQueuedCommand($id))->toBe('INFO');
 
-    public function test_convenience_commands(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
+    $id = $this->commandManager->sendCheckCommand('TEST001');
+    expect($this->commandManager->getQueuedCommand($id))->toBe('CHECK');
 
-        $id = $this->commandManager->sendInfoCommand('TEST001');
-        $this->assertGreaterThan(0, $id);
-        $this->assertEquals('INFO', $this->commandManager->getQueuedCommand($id));
+    $id = $this->commandManager->sendLogCommand('TEST001');
+    expect($this->commandManager->getQueuedCommand($id))->toBe('LOG');
 
-        $id = $this->commandManager->sendCheckCommand('TEST001');
-        $this->assertEquals('CHECK', $this->commandManager->getQueuedCommand($id));
+    $id = $this->commandManager->sendQueryUsersCommand('TEST001');
+    expect($this->commandManager->getQueuedCommand($id))->toBe('DATA QUERY USERINFO');
+});
 
-        $id = $this->commandManager->sendLogCommand('TEST001');
-        $this->assertEquals('LOG', $this->commandManager->getQueuedCommand($id));
+test('send user add command', function () {
+    $this->deviceManager->registerDevice('TEST001');
 
-        $id = $this->commandManager->sendQueryUsersCommand('TEST001');
-        $this->assertEquals('DATA QUERY USERINFO', $this->commandManager->getQueuedCommand($id));
-    }
+    $id = $this->commandManager->sendUserAddCommand('TEST001', '1001', 'John Doe', 0, '12345');
+    $cmd = $this->commandManager->getQueuedCommand($id);
 
-    public function test_send_user_add_command(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
+    expect($cmd)->toContain('DATA UPDATE USERINFO')
+        ->toContain('PIN=1001')
+        ->toContain('Name=John Doe');
+});
 
-        $id = $this->commandManager->sendUserAddCommand('TEST001', '1001', 'John Doe', 0, '12345');
-        $cmd = $this->commandManager->getQueuedCommand($id);
+test('send user delete command', function () {
+    $this->deviceManager->registerDevice('TEST001');
 
-        $this->assertStringContainsString('DATA UPDATE USERINFO', $cmd);
-        $this->assertStringContainsString('PIN=1001', $cmd);
-        $this->assertStringContainsString('Name=John Doe', $cmd);
-    }
+    $id = $this->commandManager->sendUserDeleteCommand('TEST001', '1001');
+    $cmd = $this->commandManager->getQueuedCommand($id);
 
-    public function test_send_user_delete_command(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
+    expect($cmd)->toBe('DATA DELETE USERINFO PIN=1001');
+});
 
-        $id = $this->commandManager->sendUserDeleteCommand('TEST001', '1001');
-        $cmd = $this->commandManager->getQueuedCommand($id);
-
-        $this->assertEquals('DATA DELETE USERINFO PIN=1001', $cmd);
-    }
-
-    public function test_reject_command_with_newlines(): void
-    {
-        $this->deviceManager->registerDevice('TEST001');
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->commandManager->queueCommand('TEST001', "INJECT\nC:999:EVIL");
-    }
-}
+test('reject command with newlines', function () {
+    $this->deviceManager->registerDevice('TEST001');
+    $this->commandManager->queueCommand('TEST001', "INJECT\nC:999:EVIL");
+})->throws(InvalidArgumentException::class);

@@ -2,6 +2,7 @@
 
 namespace Athwari\ZktecoAdms\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,12 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property string $device_serial_number
  * @property string $user_id
- * @property \Carbon\Carbon $recorded_at
+ * @property Carbon $recorded_at
  * @property int $status
  * @property int $verify_mode
  * @property string $work_code
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class ZktecoAttendanceLog extends Model
 {
@@ -31,7 +32,7 @@ class ZktecoAttendanceLog extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('zkteco-adms.table_prefix', 'zkteco_') . 'attendance_logs');
+        $this->setTable(config('zkteco-adms.table_prefix', 'zkteco_').'attendance_logs');
     }
 
     /**

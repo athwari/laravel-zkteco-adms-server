@@ -2,6 +2,7 @@
 
 namespace Athwari\ZktecoAdms\Tests;
 
+use Athwari\ZktecoAdms\Facades\ZktecoAdms;
 use Athwari\ZktecoAdms\ZktecoAdmsServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -17,7 +18,7 @@ abstract class TestCase extends BaseTestCase
     protected function getPackageAliases($app): array
     {
         return [
-            'ZktecoAdms' => \Athwari\ZktecoAdms\Facades\ZktecoAdms::class,
+            'ZktecoAdms' => ZktecoAdms::class,
         ];
     }
 
@@ -40,6 +41,6 @@ abstract class TestCase extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 }

@@ -23,6 +23,7 @@ class EvictStaleDevicesCommand extends Command
     {
         if (! config('zkteco-adms.device_eviction_enabled', true)) {
             $this->info('Device eviction is disabled.');
+
             return self::SUCCESS;
         }
 
