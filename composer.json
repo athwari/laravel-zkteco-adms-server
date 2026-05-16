@@ -43,7 +43,7 @@
         "pestphp/pest-plugin-laravel": "^1.0|^2.0|^3.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^1.10|^2.0",
-        "phpunit/phpunit": "^9.0|^10.5|^11.0",
+        "phpunit/phpunit": "^9.0|^10.0 <10.5.60|^11.0",
         "rector/rector": "^1.0|^2.0"
     },
     "autoload": {
@@ -84,6 +84,9 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "phpstan/extension-installer": true
+        },
+        "platform": {
+            "php": "8.2.0"
         }
     },
     "minimum-stability": "dev",
