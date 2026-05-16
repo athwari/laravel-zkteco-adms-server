@@ -5,7 +5,7 @@ namespace Athwari\ZktecoAdms\DTOs;
 /**
  * JSON representation of a device for the /iclock/inspect endpoint.
  */
-final readonly class DeviceSnapshot
+final class DeviceSnapshot
 {
     public function __construct(
         public string $serial,

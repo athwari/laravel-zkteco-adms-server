@@ -12,7 +12,7 @@ use DateTimeInterface;
  * This is a read-only data transfer object created by the AttendanceParser
  * when processing ATTLOG data from the device.
  */
-final readonly class AttendanceRecord
+final class AttendanceRecord
 {
     public function __construct(
         public string $userId,

@@ -9,7 +9,7 @@ namespace Athwari\ZktecoAdms\DTOs;
  * The device pushes user data via POST /iclock/cdata with
  * tab-separated key=value fields.
  */
-final readonly class UserRecord
+final class UserRecord
 {
     public function __construct(
         /** The user's personal identification number (unique on the device). */
