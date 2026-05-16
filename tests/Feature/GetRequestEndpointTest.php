@@ -1,59 +1,48 @@
 <?php
 
-namespace Athwari\ZktecoAdms\Tests\Feature;
-
 use Athwari\ZktecoAdms\Services\CommandManager;
 use Athwari\ZktecoAdms\Services\DeviceManager;
-use Athwari\ZktecoAdms\Tests\TestCase;
 
-class GetRequestEndpointTest extends TestCase
-{
-    public function test_getrequest_returns_ok_when_no_commands(): void
-    {
-        $response = $this->get('/iclock/getrequest?SN=TEST001');
-        $response->assertStatus(200);
-        $response->assertSee('OK');
-    }
+test('getrequest returns ok when no commands', function () {
+    $this->get('/iclock/getrequest?SN=TEST001')
+        ->assertStatus(200)
+        ->assertSee('OK');
+});
 
-    public function test_getrequest_returns_pending_commands(): void
-    {
-        // Register device and queue commands
-        $deviceManager = app(DeviceManager::class);
-        $commandManager = app(CommandManager::class);
+test('getrequest returns pending commands', function () {
+    $deviceManager = app(DeviceManager::class);
+    $commandManager = app(CommandManager::class);
 
-        $deviceManager->registerDevice('TEST001');
-        $commandManager->queueCommand('TEST001', 'INFO');
-        $commandManager->queueCommand('TEST001', 'CHECK');
+    $deviceManager->registerDevice('TEST001');
+    $commandManager->queueCommand('TEST001', 'INFO');
+    $commandManager->queueCommand('TEST001', 'CHECK');
 
-        $response = $this->get('/iclock/getrequest?SN=TEST001');
+    $response = $this->get('/iclock/getrequest?SN=TEST001');
 
-        $response->assertStatus(200);
-        $content = $response->getContent();
-        $this->assertStringContainsString('INFO', $content);
-        $this->assertStringContainsString('CHECK', $content);
-        $this->assertMatchesRegularExpression('/C:\d+:INFO/', $content);
-    }
+    $response->assertStatus(200);
+    $content = $response->getContent();
 
-    public function test_getrequest_drains_commands(): void
-    {
-        $deviceManager = app(DeviceManager::class);
-        $commandManager = app(CommandManager::class);
+    expect($content)->toContain('INFO')
+        ->toContain('CHECK')
+        ->toMatch('/C:\d+:INFO/');
+});
 
-        $deviceManager->registerDevice('TEST001');
-        $commandManager->queueCommand('TEST001', 'INFO');
+test('getrequest drains commands', function () {
+    $deviceManager = app(DeviceManager::class);
+    $commandManager = app(CommandManager::class);
 
-        // First call drains
-        $response1 = $this->get('/iclock/getrequest?SN=TEST001');
-        $this->assertStringContainsString('INFO', $response1->getContent());
+    $deviceManager->registerDevice('TEST001');
+    $commandManager->queueCommand('TEST001', 'INFO');
 
-        // Second call returns OK (no more pending)
-        $response2 = $this->get('/iclock/getrequest?SN=TEST001');
-        $this->assertEquals('OK', $response2->getContent());
-    }
+    // First call drains
+    $response1 = $this->get('/iclock/getrequest?SN=TEST001');
+    expect($response1->getContent())->toContain('INFO');
 
-    public function test_getrequest_missing_sn(): void
-    {
-        $response = $this->get('/iclock/getrequest');
-        $response->assertStatus(400);
-    }
-}
+    // Second call returns OK (no more pending)
+    $response2 = $this->get('/iclock/getrequest?SN=TEST001');
+    expect($response2->getContent())->toBe('OK');
+});
+
+test('getrequest missing sn', function () {
+    $this->get('/iclock/getrequest')->assertStatus(400);
+});

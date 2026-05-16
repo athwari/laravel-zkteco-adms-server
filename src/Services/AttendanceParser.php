@@ -35,10 +35,15 @@ class AttendanceParser
 
     /** ATTLOG tab-separated field indices. */
     private const ATT_FIELD_USER_ID = 0;
+
     private const ATT_FIELD_TIMESTAMP = 1;
+
     private const ATT_FIELD_STATUS = 2;
+
     private const ATT_FIELD_VERIFY_MODE = 3;
+
     private const ATT_FIELD_WORK_CODE = 4;
+
     private const ATT_MIN_FIELDS = 2;
 
     /**
@@ -64,9 +69,9 @@ class AttendanceParser
      * lines are skipped and logged so downstream systems never receive
      * zero-value timestamps.
      *
-     * @param string $data Raw ATTLOG body from the device
-     * @param string $serialNumber Device serial number
-     * @param string $timezone Timezone name for interpreting device-local timestamps
+     * @param  string  $data  Raw ATTLOG body from the device
+     * @param  string  $serialNumber  Device serial number
+     * @param  string  $timezone  Timezone name for interpreting device-local timestamps
      * @return AttendanceRecord[]
      */
     public function parseAttendanceRecords(string $data, string $serialNumber, string $timezone = 'UTC'): array
@@ -180,9 +185,9 @@ class AttendanceParser
      * - Device info: sep="\n", keyTransform=null
      * - Registry: sep=",", keyTransform=trimTildePrefix
      *
-     * @param string $data Raw data string
-     * @param string $separator Separator between key=value pairs
-     * @param callable|null $keyTransform Optional transformation applied to each key
+     * @param  string  $data  Raw data string
+     * @param  string  $separator  Separator between key=value pairs
+     * @param  callable|null  $keyTransform  Optional transformation applied to each key
      * @return array<string, string>
      */
     public function parseKVPairs(string $data, string $separator = "\n", ?callable $keyTransform = null): array
@@ -216,8 +221,8 @@ class AttendanceParser
      *
      * Lines that lack a PIN field are skipped with a warning.
      *
-     * @param string $data Raw USERINFO body from the device
-     * @param string $serialNumber Device serial number
+     * @param  string  $data  Raw USERINFO body from the device
+     * @param  string  $serialNumber  Device serial number
      * @return UserRecord[]
      */
     public function parseUserRecords(string $data, string $serialNumber): array
@@ -293,8 +298,8 @@ class AttendanceParser
      * The parser accumulates key=value pairs into the current result. When a
      * new ID= is encountered, it flushes the previous result and starts a new one.
      *
-     * @param string $body Raw devicecmd body
-     * @param string $serialNumber Device serial number
+     * @param  string  $body  Raw devicecmd body
+     * @param  string  $serialNumber  Device serial number
      * @return CommandResult[]
      */
     public function parseCommandResults(string $body, string $serialNumber): array
@@ -398,7 +403,7 @@ class AttendanceParser
     public static function bodyPreview(string $body): string
     {
         if (strlen($body) > self::MAX_BODY_PREVIEW_LEN) {
-            return substr($body, 0, self::MAX_BODY_PREVIEW_LEN) . '...';
+            return substr($body, 0, self::MAX_BODY_PREVIEW_LEN).'...';
         }
 
         return $body;

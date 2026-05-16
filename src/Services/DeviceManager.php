@@ -80,6 +80,7 @@ class DeviceManager
             return false;
         }
         $threshold = config('zkteco-adms.online_threshold', 120);
+
         return $device->last_activity->diffInSeconds(now()) <= $threshold;
     }
 
@@ -103,6 +104,7 @@ class DeviceManager
         if ($device !== null && $device->timezone !== null) {
             return $device->timezone;
         }
+
         return config('zkteco-adms.default_timezone', 'UTC');
     }
 

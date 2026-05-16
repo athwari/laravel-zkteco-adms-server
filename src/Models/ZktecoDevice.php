@@ -2,6 +2,7 @@
 
 namespace Athwari\ZktecoAdms\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -10,11 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property int $id
  * @property string $serial_number
- * @property \Carbon\Carbon|null $last_activity
+ * @property Carbon|null $last_activity
  * @property array|null $options
  * @property string|null $timezone
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class ZktecoDevice extends Model
 {
@@ -28,7 +29,7 @@ class ZktecoDevice extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('zkteco-adms.table_prefix', 'zkteco_') . 'devices');
+        $this->setTable(config('zkteco-adms.table_prefix', 'zkteco_').'devices');
     }
 
     /**

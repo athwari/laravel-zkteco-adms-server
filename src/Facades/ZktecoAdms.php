@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * Facade for convenient access to ZKTeco ADMS functionality.
  *
  * Device management methods are proxied to DeviceManager:
+ *
  * @method static \Athwari\ZktecoAdms\Models\ZktecoDevice registerDevice(string $serialNumber)
  * @method static void updateActivity(string $serialNumber)
  * @method static \Athwari\ZktecoAdms\Models\ZktecoDevice|null getDevice(string $serialNumber)
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static int evictStaleDevices()
  * @method static array getDeviceSnapshots()
  *
- * @see \Athwari\ZktecoAdms\Services\DeviceManager
+ * @see DeviceManager
  */
 class ZktecoAdms extends Facade
 {

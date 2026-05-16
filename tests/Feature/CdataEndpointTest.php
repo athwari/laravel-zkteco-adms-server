@@ -1,89 +1,75 @@
 <?php
 
-namespace Athwari\ZktecoAdms\Tests\Feature;
-
 use Athwari\ZktecoAdms\Events\AttendanceReceived;
 use Athwari\ZktecoAdms\Events\DeviceInfoReceived;
 use Athwari\ZktecoAdms\Models\ZktecoAttendanceLog;
-use Athwari\ZktecoAdms\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 
-class CdataEndpointTest extends TestCase
-{
-    public function test_cdata_get_handshake(): void
-    {
-        $response = $this->get('/iclock/cdata?SN=TEST001');
-        $response->assertStatus(200);
-        $response->assertSee('OK');
-    }
+test('cdata get handshake', function () {
+    $response = $this->get('/iclock/cdata?SN=TEST001');
 
-    public function test_cdata_missing_sn_returns_400(): void
-    {
-        $response = $this->get('/iclock/cdata');
-        $response->assertStatus(400);
-    }
+    $response->assertStatus(200);
+    $response->assertSee('OK');
+});
 
-    public function test_cdata_invalid_sn_returns_400(): void
-    {
-        $response = $this->get('/iclock/cdata?SN=has%20space');
-        $response->assertStatus(400);
-    }
+test('cdata missing sn returns 400', function () {
+    $this->get('/iclock/cdata')->assertStatus(400);
+});
 
-    public function test_cdata_post_attlog(): void
-    {
-        Event::fake([AttendanceReceived::class]);
+test('cdata invalid sn returns 400', function () {
+    $this->get('/iclock/cdata?SN=has%20space')->assertStatus(400);
+});
 
-        $body = "1001\t2024-03-15 08:30:00\t0\t1\t\n1002\t2024-03-15 08:31:00\t1\t4\tWC01";
+test('cdata post attlog', function () {
+    Event::fake([AttendanceReceived::class]);
 
-        $response = $this->call('POST', '/iclock/cdata?SN=TEST001&table=ATTLOG', [], [], [], [], $body);
+    $body = "1001\t2024-03-15 08:30:00\t0\t1\t\n1002\t2024-03-15 08:31:00\t1\t4\tWC01";
 
-        $response->assertStatus(200);
-        $response->assertSee('OK: 2');
+    $response = $this->call('POST', '/iclock/cdata?SN=TEST001&table=ATTLOG', [], [], [], [], $body);
 
-        // Verify database records
-        $this->assertDatabaseCount((new ZktecoAttendanceLog)->getTable(), 2);
-        $this->assertDatabaseHas((new ZktecoAttendanceLog)->getTable(), [
-            'user_id' => '1001',
-            'device_serial_number' => 'TEST001',
-            'status' => 0,
-        ]);
+    $response->assertStatus(200);
+    $response->assertSee('OK: 2');
 
-        // Verify event dispatched
-        Event::assertDispatched(AttendanceReceived::class, function ($event) {
-            return $event->serialNumber === 'TEST001' && count($event->records) === 2;
-        });
-    }
+    $table = (new ZktecoAttendanceLog())->getTable();
 
-    public function test_cdata_post_operlog(): void
-    {
-        $response = $this->call('POST', '/iclock/cdata?SN=TEST001&table=OPERLOG', [], [], [], [], 'some log data');
-        $response->assertStatus(200);
-        $response->assertSee('OK');
-    }
+    $this->assertDatabaseCount($table, 2);
+    $this->assertDatabaseHas($table, [
+        'user_id' => '1001',
+        'device_serial_number' => 'TEST001',
+        'status' => 0,
+    ]);
 
-    public function test_cdata_post_device_info(): void
-    {
-        Event::fake([DeviceInfoReceived::class]);
+    Event::assertDispatched(AttendanceReceived::class, function ($event) {
+        return $event->serialNumber === 'TEST001' && count($event->records) === 2;
+    });
+});
 
-        $body = "FWVersion=Ver 8.1.1\nDeviceName=TestDevice\nIPAddress=192.168.1.100";
+test('cdata post operlog', function () {
+    $response = $this->call('POST', '/iclock/cdata?SN=TEST001&table=OPERLOG', [], [], [], [], 'some log data');
 
-        $response = $this->call('POST', '/iclock/cdata?SN=TEST001', [], [], [], [], $body);
+    $response->assertStatus(200);
+    $response->assertSee('OK');
+});
 
-        $response->assertStatus(200);
+test('cdata post device info', function () {
+    Event::fake([DeviceInfoReceived::class]);
 
-        Event::assertDispatched(DeviceInfoReceived::class, function ($event) {
-            return $event->serialNumber === 'TEST001'
-                && $event->info['FWVersion'] === 'Ver 8.1.1';
-        });
-    }
+    $body = "FWVersion=Ver 8.1.1\nDeviceName=TestDevice\nIPAddress=192.168.1.100";
 
-    public function test_cdata_device_limit_reached(): void
-    {
-        config()->set('zkteco-adms.max_devices', 1);
+    $response = $this->call('POST', '/iclock/cdata?SN=TEST001', [], [], [], [], $body);
 
-        $this->get('/iclock/cdata?SN=DEV001');
-        $response = $this->get('/iclock/cdata?SN=DEV002');
+    $response->assertStatus(200);
 
-        $response->assertStatus(503);
-    }
-}
+    Event::assertDispatched(DeviceInfoReceived::class, function ($event) {
+        return $event->serialNumber === 'TEST001'
+            && $event->info['FWVersion'] === 'Ver 8.1.1';
+    });
+});
+
+test('cdata device limit reached', function () {
+    config()->set('zkteco-adms.max_devices', 1);
+
+    $this->get('/iclock/cdata?SN=DEV001');
+
+    $this->get('/iclock/cdata?SN=DEV002')->assertStatus(503);
+});

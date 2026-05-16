@@ -17,7 +17,7 @@ class ZktecoAdmsServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Merge config
-        $this->mergeConfigFrom(__DIR__ . '/../config/zkteco-adms.php', 'zkteco-adms');
+        $this->mergeConfigFrom(__DIR__.'/../config/zkteco-adms.php', 'zkteco-adms');
 
         // Register singletons
         $this->app->singleton(AttendanceParser::class, function () {
@@ -40,19 +40,19 @@ class ZktecoAdmsServiceProvider extends ServiceProvider
     {
         // Publish config
         $this->publishes([
-            __DIR__ . '/../config/zkteco-adms.php' => config_path('zkteco-adms.php'),
+            __DIR__.'/../config/zkteco-adms.php' => config_path('zkteco-adms.php'),
         ], 'zkteco-adms-config');
 
         // Publish migrations
         $this->publishes([
-            __DIR__ . '/../database/migrations/' => database_path('migrations'),
+            __DIR__.'/../database/migrations/' => database_path('migrations'),
         ], 'zkteco-adms-migrations');
 
         // Load migrations
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Load routes
-        $this->loadRoutesFrom(__DIR__ . '/../routes/adms.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/adms.php');
 
         // Register middleware alias
         $router = $this->app->make('router');

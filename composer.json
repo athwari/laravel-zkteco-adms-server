@@ -2,6 +2,7 @@
     "name": "athwari/laravel-zkteco-adms-server",
     "description": "Laravel package implementing the ZKTeco ADMS protocol for biometric attendance devices.",
     "keywords": [
+        "athwari",
         "laravel",
         "zkteco",
         "adms",
@@ -11,10 +12,17 @@
         "iclock"
     ],
     "license": "MIT",
+    "type": "library",
+    "homepage": "https://github.com/athwari/laravel-zkteco-adms-server",
+    "support": {
+        "issues": "https://github.com/athwari/laravel-zkteco-adms-server/issues",
+        "source": "https://github.com/athwari/laravel-zkteco-adms-server"
+    },
     "authors": [
         {
-            "name": "Athwari",
-            "email": "athwari@example.com"
+            "name": "Asem Athwari",
+            "email": "asem@athwari.com",
+            "role": "Developer"
         }
     ],
     "require": {
@@ -28,8 +36,15 @@
         "illuminate/log": "^10.0|^11.0|^12.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^8.0|^9.0|^10.0",
-        "phpunit/phpunit": "^10.0|^11.0"
+        "larastan/larastan": "^2.9|^3.0",
+        "laravel/pint": "^1.13",
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^1.10|^2.0",
+        "phpunit/phpunit": "^10.0|^11.0",
+        "rector/rector": "^1.0|^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -49,6 +64,26 @@
             "aliases": {
                 "ZktecoAdms": "Athwari\\ZktecoAdms\\Facades\\ZktecoAdms"
             }
+        },
+        "branch-alias": {
+            "dev-main": "1.x-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "post-autoload-dump": "@composer run prepare",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "format": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse",
+        "refactor": "vendor/bin/rector"
+    },
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
         }
     },
     "minimum-stability": "dev",

@@ -208,6 +208,7 @@ class AdmsController extends Controller
 
         if (! $this->parser->validateSerialNumber($sn)) {
             Log::warning('Invalid serial number', ['sn' => $sn]);
+
             return response('Invalid SN parameter', 400);
         }
 
@@ -218,6 +219,7 @@ class AdmsController extends Controller
                 'device' => $sn,
                 'limit' => config('zkteco-adms.max_devices'),
             ]);
+
             return response('Device limit reached', 503);
         } catch (InvalidSerialNumberException) {
             return response('Invalid SN parameter', 400);
@@ -259,7 +261,7 @@ class AdmsController extends Controller
             event(new AttendanceReceived($serialNumber, $records));
         }
 
-        return response('OK: ' . count($records), 200);
+        return response('OK: '.count($records), 200);
     }
 
     /**
@@ -315,6 +317,7 @@ class AdmsController extends Controller
             foreach ($commands as $entry) {
                 $output .= $entry->toWireFormat();
             }
+
             return response($output, 200);
         }
 

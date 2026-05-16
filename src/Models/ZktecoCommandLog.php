@@ -2,6 +2,7 @@
 
 namespace Athwari\ZktecoAdms\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,11 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $command
  * @property string $status
  * @property int|null $return_code
- * @property \Carbon\Carbon|null $queued_at
- * @property \Carbon\Carbon|null $sent_at
- * @property \Carbon\Carbon|null $confirmed_at
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon|null $queued_at
+ * @property Carbon|null $sent_at
+ * @property Carbon|null $confirmed_at
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class ZktecoCommandLog extends Model
 {
@@ -35,7 +36,7 @@ class ZktecoCommandLog extends Model
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
-        $this->setTable(config('zkteco-adms.table_prefix', 'zkteco_') . 'command_logs');
+        $this->setTable(config('zkteco-adms.table_prefix', 'zkteco_').'command_logs');
     }
 
     /**

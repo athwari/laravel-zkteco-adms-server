@@ -5,7 +5,6 @@ namespace Athwari\ZktecoAdms\Services;
 use Athwari\ZktecoAdms\DTOs\CommandEntry;
 use Athwari\ZktecoAdms\Exceptions\CommandQueueFullException;
 use Athwari\ZktecoAdms\Exceptions\DeviceNotFoundException;
-use Athwari\ZktecoAdms\Exceptions\InvalidSerialNumberException;
 use Athwari\ZktecoAdms\Models\ZktecoCommandLog;
 use Athwari\ZktecoAdms\Models\ZktecoDevice;
 use Illuminate\Support\Facades\Log;
@@ -22,10 +21,11 @@ class CommandManager
     /**
      * Queue a command to be sent to a device on its next poll.
      *
+     * @return int The assigned command ID
+     *
      * @throws DeviceNotFoundException If the device is not registered
      * @throws CommandQueueFullException If the per-device queue limit is reached
      * @throws \InvalidArgumentException If the command contains control characters
-     * @return int The assigned command ID
      */
     public function queueCommand(string $serialNumber, string $command): int
     {
@@ -110,6 +110,7 @@ class CommandManager
 
         if ($log === null) {
             Log::warning('Command confirmation for unknown ID', ['command_id' => $commandId]);
+
             return;
         }
 
@@ -126,7 +127,8 @@ class CommandManager
     public function getQueuedCommand(int $commandId): string
     {
         $log = ZktecoCommandLog::where('command_id', $commandId)->first();
-        return $log?->command ?? '';
+
+        return $log->command ?? '';
     }
 
     // ---------------------------------------------------------------
@@ -165,6 +167,7 @@ class CommandManager
         }
 
         $cmd = sprintf("DATA UPDATE USERINFO PIN=%s\tName=%s\tPrivilege=%d\tCard=%s", $pin, $name, $privilege, $card);
+
         return $this->queueCommand($serialNumber, $cmd);
     }
 
@@ -176,6 +179,7 @@ class CommandManager
     public function sendUserDeleteCommand(string $serialNumber, string $pin): int
     {
         $this->validateCommandField('pin', $pin);
+
         return $this->queueCommand($serialNumber, sprintf('DATA DELETE USERINFO PIN=%s', $pin));
     }
 
@@ -189,6 +193,7 @@ class CommandManager
     public function sendGetOptionCommand(string $serialNumber, string $key): int
     {
         $this->validateCommandField('key', $key);
+
         return $this->queueCommand($serialNumber, sprintf('GET OPTION FROM %s', $key));
     }
 
@@ -207,6 +212,7 @@ class CommandManager
     public function sendShellCommand(string $serialNumber, string $command): int
     {
         $this->validateCommandField('command', $command);
+
         return $this->queueCommand($serialNumber, sprintf('Shell %s', $command));
     }
 
