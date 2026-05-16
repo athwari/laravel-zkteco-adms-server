@@ -11,41 +11,44 @@ on:
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }}
+    runs-on: ubuntu-latest
+
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        php: [8.0, 8.1, 8.2, 8.3, 8.4]
+        php: ['8.0', '8.1', '8.2', '8.3', '8.4']
         laravel: ['8.*', '9.*', '10.*', '11.*', '12.*']
         stability: [prefer-lowest, prefer-stable]
-        exclude:
-          # Laravel 8 & 9 max PHP is 8.1 (unofficially works on 8.2+ but not tested by Taylor)
-          - laravel: '8.*'
-            php: 8.2
-          - laravel: '8.*'
-            php: 8.3
-          - laravel: '8.*'
-            php: 8.4
-          - laravel: '9.*'
-            php: 8.3
-          - laravel: '9.*'
-            php: 8.4
-          # Laravel 10+ dropped PHP 8.0
-          - laravel: '10.*'
-            php: 8.0
-          # Laravel 11+ dropped PHP 8.0 and 8.1
-          - laravel: '11.*'
-            php: 8.0
-          - laravel: '11.*'
-            php: 8.1
-          # Laravel 12 same as 11
-          - laravel: '12.*'
-            php: 8.0
-          - laravel: '12.*'
-            php: 8.1
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+        exclude:
+          # Laravel 8 supports PHP 7.3 - 8.1
+          - laravel: '8.*'
+            php: '8.2'
+          - laravel: '8.*'
+            php: '8.3'
+          - laravel: '8.*'
+            php: '8.4'
+
+          # Laravel 9 supports PHP 8.0 - 8.2
+          - laravel: '9.*'
+            php: '8.3'
+          - laravel: '9.*'
+            php: '8.4'
+
+          # Laravel 10 supports PHP 8.1+
+          - laravel: '10.*'
+            php: '8.0'
+
+          # Laravel 11 and 12 support PHP 8.2+
+          - laravel: '11.*'
+            php: '8.0'
+          - laravel: '11.*'
+            php: '8.1'
+          - laravel: '12.*'
+            php: '8.0'
+          - laravel: '12.*'
+            php: '8.1'
 
     steps:
       - name: Checkout code
@@ -63,10 +66,19 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Remove lock file
+        run: rm -f composer.lock
+
       - name: Install dependencies
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
-          composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+          composer require "laravel/framework:${{ matrix.laravel }}" --dev --no-update --no-interaction
+          composer update \
+            --${{ matrix.stability }} \
+            --prefer-dist \
+            --no-interaction
 
       - name: List installed dependencies
         run: composer show -D
