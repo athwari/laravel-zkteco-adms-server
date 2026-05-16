@@ -8,7 +8,7 @@ namespace Athwari\ZktecoAdms\DTOs;
  * IDs are assigned at queue time so callers can correlate
  * command confirmations back to the original request.
  */
-final readonly class CommandEntry
+final class CommandEntry
 {
     public function __construct(
         /** Monotonically increasing identifier assigned at queue time. */

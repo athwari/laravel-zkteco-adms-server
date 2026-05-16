@@ -10,7 +10,7 @@ namespace Athwari\ZktecoAdms\DTOs;
  * executes the command and POSTs back a confirmation containing the command ID
  * and a return code. A returnCode of 0 indicates success.
  */
-final readonly class CommandResult
+final class CommandResult
 {
     public function __construct(
         /** The device that executed the command. */
