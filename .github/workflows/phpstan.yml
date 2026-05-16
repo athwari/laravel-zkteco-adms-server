@@ -6,13 +6,11 @@ on:
     paths:
       - '**.php'
       - 'phpstan.neon.dist'
-      - 'phpstan-baseline.neon'
   pull_request:
     branches: [main, master]
     paths:
       - '**.php'
       - 'phpstan.neon.dist'
-      - 'phpstan-baseline.neon'
 
 jobs:
   phpstan:
