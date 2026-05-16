@@ -37,6 +37,7 @@
     },
     "require-dev": {
         "larastan/larastan": "^1.0|^2.9|^3.0",
+        "laravel/framework": "10.*",
         "laravel/pint": "^1.5 <1.21",
         "orchestra/testbench": "^6.24|^7.22|^8.22|^9.10|^10.0",
         "pestphp/pest": "^1.0|^2.0|^3.0",
@@ -84,9 +85,6 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "phpstan/extension-installer": true
-        },
-        "platform": {
-            "php": "8.2.0"
         }
     },
     "minimum-stability": "dev",
