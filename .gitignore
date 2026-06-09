@@ -38,6 +38,6 @@ Thumbs.db
 *.local
 
 # Local AI Context and Project State Logs
-.ai_context/
+ai_context/
 antigravity_state.json
 
